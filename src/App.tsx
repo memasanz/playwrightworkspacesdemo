@@ -1,13 +1,10 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
+import type { Trip } from './types'
+import { ThemeToggle } from './components/ThemeToggle'
+import { AddTripForm } from './components/AddTripForm'
+import { DestinationList } from './components/DestinationList'
 import './App.css'
-
-type Trip = {
-  id: number
-  city: string
-  country: string
-  status: 'Wishlist' | 'Booked'
-}
 
 const initialTrips: Trip[] = [
   { id: 1, city: 'Lisbon', country: 'Portugal', status: 'Wishlist' },
@@ -57,6 +54,23 @@ function App() {
     setMessage(`${trimmedTrip} was added to your wishlist.`)
   }
 
+  function handleToggleStatus(id: number) {
+    setTrips((currentTrips) =>
+      currentTrips.map((trip) =>
+        trip.id === id
+          ? {
+              ...trip,
+              status: trip.status === 'Wishlist' ? 'Booked' : 'Wishlist',
+            }
+          : trip,
+      ),
+    )
+  }
+
+  function handleRemoveTrip(id: number) {
+    setTrips((currentTrips) => currentTrips.filter((trip) => trip.id !== id))
+  }
+
   return (
     <main className={isDarkMode ? 'app app--dark' : 'app'}>
       <section className="hero" aria-labelledby="page-title">
@@ -70,67 +84,27 @@ function App() {
           <button type="button" onClick={() => setCount((value) => value + 1)}>
             Clicked {count} {count === 1 ? 'time' : 'times'}
           </button>
-          <button
-            type="button"
-            className="secondary"
-            aria-pressed={isDarkMode}
-            onClick={() => setIsDarkMode((value) => !value)}
-          >
-            {isDarkMode ? 'Use light mode' : 'Use dark mode'}
-          </button>
+          <ThemeToggle
+            isDarkMode={isDarkMode}
+            onToggle={() => setIsDarkMode((value) => !value)}
+          />
         </div>
       </section>
 
-      <section className="panel" aria-labelledby="add-trip-heading">
-        <h2 id="add-trip-heading">Add a destination</h2>
-        <form className="trip-form" onSubmit={handleAddTrip}>
-          <label htmlFor="next-trip">City</label>
-          <div>
-            <input
-              id="next-trip"
-              name="next-trip"
-              value={nextTrip}
-              onChange={(event) => setNextTrip(event.target.value)}
-              placeholder="Barcelona"
-            />
-            <button type="submit">Add trip</button>
-          </div>
-        </form>
-        {message ? (
-          <p className="status-message" role="status">
-            {message}
-          </p>
-        ) : null}
-      </section>
+      <AddTripForm
+        value={nextTrip}
+        onChange={(event) => setNextTrip(event.target.value)}
+        onSubmit={handleAddTrip}
+        message={message}
+      />
 
-      <section className="panel" aria-labelledby="trip-list-heading">
-        <div className="section-header">
-          <div>
-            <h2 id="trip-list-heading">Destinations</h2>
-            <p>{filteredTrips.length} trips visible</p>
-          </div>
-          <label className="search-field">
-            Search trips
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Try booked or Japan"
-            />
-          </label>
-        </div>
-
-        <ul className="trip-list" aria-label="Destination list">
-          {filteredTrips.map((trip) => (
-            <li key={trip.id}>
-              <div>
-                <strong>{trip.city}</strong>
-                <span>{trip.country}</span>
-              </div>
-              <span className="badge">{trip.status}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <DestinationList
+        trips={filteredTrips}
+        search={search}
+        onSearchChange={(event) => setSearch(event.target.value)}
+        onToggleStatus={handleToggleStatus}
+        onRemove={handleRemoveTrip}
+      />
     </main>
   )
 }
