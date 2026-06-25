@@ -31,9 +31,44 @@ test('filters destinations by status or country', async ({ page }) => {
 
   await page.getByLabel('Search trips').fill('Japan')
 
-  await expect(page.getByText('Tokyo')).toBeVisible()
-  await expect(page.getByText('Lisbon')).toBeHidden()
+  await expect(page.getByText('Tokyo', { exact: true })).toBeVisible()
+  await expect(page.getByText('Lisbon', { exact: true })).toBeHidden()
   await expect(page.getByText('1 trips visible')).toBeVisible()
+})
+
+test('marks a destination as booked and back', async ({ page }) => {
+  await page.goto('/')
+
+  await page.getByRole('button', { name: 'Mark Lisbon as booked' }).click()
+
+  await expect(
+    page.getByRole('listitem').filter({ hasText: 'Lisbon' }).getByText('Booked'),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Move Lisbon to wishlist' }),
+  ).toBeVisible()
+
+  await page.getByRole('button', { name: 'Move Lisbon to wishlist' }).click()
+
+  await expect(
+    page
+      .getByRole('listitem')
+      .filter({ hasText: 'Lisbon' })
+      .getByText('Wishlist'),
+  ).toBeVisible()
+})
+
+test('removes a destination from the list', async ({ page }) => {
+  await page.goto('/')
+
+  await expect(page.getByText('3 trips visible')).toBeVisible()
+
+  await page.getByRole('button', { name: 'Remove Tokyo' }).click()
+
+  await expect(
+    page.getByRole('listitem').filter({ hasText: 'Tokyo' }),
+  ).toHaveCount(0)
+  await expect(page.getByText('2 trips visible')).toBeVisible()
 })
 
 test('toggles dark mode', async ({ page }) => {
@@ -99,8 +134,8 @@ destinationSearchCases.forEach(({ search, visible, hidden, count }, index) => {
 
     await page.getByLabel('Search trips').fill(search)
 
-    await expect(page.getByText(visible)).toBeVisible()
-    await expect(page.getByText(hidden)).toBeHidden()
+    await expect(page.getByText(visible, { exact: true })).toBeVisible()
+    await expect(page.getByText(hidden, { exact: true })).toBeHidden()
     await expect(page.getByText(`${count} trips visible`)).toBeVisible()
   })
 })

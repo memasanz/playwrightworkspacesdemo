@@ -179,12 +179,29 @@ input {
 
 .trip-list li {
   display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: center;
+  flex-direction: column;
+  gap: 12px;
   border: 1px solid var(--border);
   border-radius: 18px;
   padding: 16px;
+}
+
+.trip-card__main {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.trip-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.trip-actions button {
+  padding: 8px 14px;
+  font-size: 0.85rem;
 }
 
 .trip-list strong,
